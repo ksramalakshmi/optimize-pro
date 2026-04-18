@@ -5,6 +5,7 @@
     <h1>Sales History</h1>
     <div class="actions">
         <a href="{{ url_for('export.sales', days=days) }}" class="btn btn-secondary">📥 Export CSV</a>
+        <a href="{{ url_for('sales.upload') }}" class="btn btn-secondary">📤 Upload CSV</a>
         <a href="{{ url_for('sales.record') }}" class="btn btn-primary">+ Record Sale</a>
     </div>
 </div>

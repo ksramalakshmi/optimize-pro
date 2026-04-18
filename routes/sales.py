@@ -79,3 +79,38 @@ def product_inventory(product_id):
                 'selling_price': mi.selling_price,
             })
     return jsonify(result)
+
+
+@sales_bp.route('/upload', methods=['GET', 'POST'])
+@login_required
+def upload():
+    from services.csv_service import parse_csv, validate_sales_csv, import_sales_csv
+    
+    if request.method == 'POST':
+        file = request.files.get('csv_file')
+        if not file or not file.filename.endswith('.csv'):
+            flash('Please upload a .csv file.', 'error')
+            return render_template('sales/upload.html')
+
+        deduct_inventory = request.form.get('deduct_inventory') == 'on'
+
+        try:
+            df = parse_csv(file)
+            is_valid, errors = validate_sales_csv(df)
+            if not is_valid:
+                for e in errors:
+                    flash(e, 'error')
+                return render_template('sales/upload.html')
+
+            imported, errors = import_sales_csv(df, current_user.id, deduct_inventory)
+            flash(f'Import complete: {imported} sales records added.', 'success')
+            if errors:
+                for e in errors[:5]:
+                    flash(e, 'warning')
+
+        except ValueError as e:
+            flash(str(e), 'error')
+
+        return redirect(url_for('sales.history'))
+
+    return render_template('sales/upload.html')

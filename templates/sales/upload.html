@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Import Sales CSV — OptimizePro{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Import Sales History via CSV</h1>
+    <a href="{{ url_for('sales.history') }}" class="btn btn-secondary">← Back</a>
+</div>
+<div class="card" style="max-width: 650px;">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="csv_file">Select CSV File</label>
+            <input type="file" id="csv_file" name="csv_file" class="form-control" accept=".csv" required>
+        </div>
+        
+        <div style="margin: 1.5rem 0; padding: 1rem; background: rgba(99, 102, 241, 0.1); border: 1px solid var(--accent-primary); border-radius: var(--radius-sm);">
+            <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; color: var(--text-primary);">
+                <input type="checkbox" name="deduct_inventory" id="deduct_inventory" style="margin-top: 0.25rem; accent-color: var(--accent-primary); width: 16px; height: 16px;">
+                <div>
+                    <div style="font-weight: 600; font-size: 0.95rem;">Deduct from current inventory</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; line-height: 1.4;">
+                        If checked, importing this file will <strong>reduce</strong> your current allocated stock for every sale (like a normal bulk order sync). Leave unchecked if you are simply importing historical data for analytics and your current stock is already accurate.
+                    </div>
+                </div>
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">📤 Upload & Import Sales</button>
+    </form>
+    
+    <div style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-secondary); border-radius: var(--radius); border: 1px solid var(--border);">
+        <h3 style="font-size: 1.2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; color: var(--text-white);">CSV Upload Guidelines & Documentation</h3>
+        
+        <h4 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--accent-primary);">Format Overview</h4>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Your CSV file must include a header row with specific column names to seamlessly map your sales history.
+        </p>
+
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem;">Required Columns</h4>
+        <ul style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; padding-left: 1.5rem;">
+            <li><code>sku</code>: The exact product SKU matching your catalog (e.g., WH-1000).</li>
+            <li><code>marketplace</code>: The marketplace exact code (e.g., amazon, flipkart, meesho).</li>
+            <li><code>quantity</code>: The number of units sold in this transaction. Must be a positive integer.</li>
+            <li><code>sale_price</code>: The final selling price per unit. Must be numeric.</li>
+        </ul>
+
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem;">Optional Columns</h4>
+        <ul style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; padding-left: 1.5rem;">
+            <li><code>date</code>: The date of the sale in YYYY-MM-DD format. If omitted, the system defaults to today's date.</li>
+        </ul>
+
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--color-warning);">Do's and Don'ts</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div style="background: rgba(34, 197, 94, 0.1); border-left: 3px solid var(--color-success); padding: 0.75rem; border-radius: 4px;">
+                <h5 style="color: var(--color-success); margin-bottom: 0.5rem; font-size: 0.85rem;">Do's ✅</h5>
+                <ul style="font-size: 0.75rem; color: var(--text-secondary); padding-left: 1rem; margin: 0;">
+                    <li style="margin-bottom: 0.25rem;">Ensure SKUs precisely match the capitalization of products already added to your system.</li>
+                    <li style="margin-bottom: 0.25rem;">Format dates as standard YYYY-MM-DD or standard datetime if including historical timelines.</li>
+                    <li>Verify the marketplace codes are active in your settings.</li>
+                </ul>
+            </div>
+            <div style="background: rgba(239, 68, 68, 0.1); border-left: 3px solid var(--color-danger); padding: 0.75rem; border-radius: 4px;">
+                <h5 style="color: var(--color-danger); margin-bottom: 0.5rem; font-size: 0.85rem;">Don'ts ❌</h5>
+                <ul style="font-size: 0.75rem; color: var(--text-secondary); padding-left: 1rem; margin: 0;">
+                    <li style="margin-bottom: 0.25rem;">Don't include currency symbols in the `sale_price` column.</li>
+                    <li style="margin-bottom: 0.25rem;">Don't leave the marketplace blank—we need to know where the stock originated.</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem;">Sample Data Format</h4>
+        <pre style="font-size: 0.8rem; color: var(--text-primary); background: var(--bg-input); padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow-x: auto;">sku,marketplace,quantity,sale_price,date
+WH-1000,amazon,3,24990,2023-10-14
+IP-15,flipkart,1,549,2023-10-15
+WH-1000,meesho,10,23000,</pre>
+    </div>
+</div>
+{% endblock %}
