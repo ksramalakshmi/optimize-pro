@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Sales History — OptimizePro{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Sales History</h1>
+    <div class="actions">
+        <a href="{{ url_for('export.sales', days=days) }}" class="btn btn-secondary">📥 Export CSV</a>
+        <a href="{{ url_for('sales.record') }}" class="btn btn-primary">+ Record Sale</a>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <div class="filter-group">
+        <label style="font-size: 0.8rem; color: var(--text-muted);">Marketplace:</label>
+        <select onchange="window.location.href='?marketplace_id='+this.value+'&days={{ days }}'" class="form-control" style="width: 160px; padding: 0.4rem 0.75rem;">
+            <option value="">All</option>
+            {% for mp in marketplaces %}
+            <option value="{{ mp.id }}" {% if selected_mp == mp.id %}selected{% endif %}>{{ mp.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-group">
+        <div class="date-pills">
+            {% for d in [7, 14, 30, 90] %}
+            <a href="?days={{ d }}{% if selected_mp %}&marketplace_id={{ selected_mp }}{% endif %}" class="date-pill {% if days == d %}active{% endif %}">{{ d }}d</a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    {% if sales %}
+    <div class="table-container">
+        <table>
+            <thead><tr><th>Date</th><th>Product</th><th>Marketplace</th><th>Qty</th><th>Price</th><th>Revenue</th><th>Profit</th></tr></thead>
+            <tbody>
+            {% for sale in sales %}
+            <tr>
+                <td style="color: var(--text-muted); font-size: 0.8rem;">{{ sale.sale_date.strftime('%b %d, %H:%M') }}</td>
+                <td>{{ sale.product.name }}</td>
+                <td><span class="mp-badge"><span class="mp-dot" style="background: {{ sale.marketplace.color }};"></span>{{ sale.marketplace.name }}</span></td>
+                <td>{{ sale.quantity_sold }}</td>
+                <td>₹{{ "%.0f"|format(sale.sale_price) }}</td>
+                <td style="font-weight: 600;">₹{{ "%.0f"|format(sale.revenue) }}</td>
+                <td style="color: var(--color-success);">₹{{ "%.0f"|format(sale.profit) }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="icon">📋</div><h3>No sales in this period</h3></div>
+    {% endif %}
+</div>
+{% endblock %}

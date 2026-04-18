@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Record Sale — OptimizePro{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Record a Sale</h1>
+    <a href="{{ url_for('sales.history') }}" class="btn btn-secondary">📋 Sales History</a>
+</div>
+<div class="card" style="max-width: 500px;">
+    <form method="POST" id="saleForm">
+        <div class="form-group">
+            <label for="marketplace_id">Marketplace</label>
+            <select id="marketplace_id" name="marketplace_id" class="form-control" required>
+                <option value="">Select marketplace...</option>
+                {% for mp in marketplaces %}
+                <option value="{{ mp.id }}" data-color="{{ mp.color }}">{{ mp.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="product_id">Product</label>
+            <select id="product_id" name="product_id" class="form-control" required>
+                <option value="">Select product...</option>
+                {% for product in products %}
+                <option value="{{ product.id }}">{{ product.sku }} — {{ product.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div id="stockInfo" style="display: none; padding: 0.75rem; background: var(--bg-secondary); border-radius: var(--radius); margin-bottom: 1rem; font-size: 0.85rem;">
+        </div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" name="quantity" class="form-control" min="1" value="1" required>
+            </div>
+            <div class="form-group">
+                <label for="sale_price">Sale Price (₹ per unit)</label>
+                <input type="number" id="sale_price" name="sale_price" class="form-control" step="0.01" min="0" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">💰 Record Sale</button>
+    </form>
+</div>
+{% block scripts %}
+<script>
+const productSelect = document.getElementById('product_id');
+const marketplaceSelect = document.getElementById('marketplace_id');
+const stockInfo = document.getElementById('stockInfo');
+const priceInput = document.getElementById('sale_price');
+
+function updateStockInfo() {
+    const productId = productSelect.value;
+    const marketplaceId = marketplaceSelect.value;
+    if (!productId) { stockInfo.style.display = 'none'; return; }
+
+    fetch(`/sales/api/product-inventory/${productId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.length === 0) {
+                stockInfo.innerHTML = '<span style="color: var(--color-warning);">⚠️ Not listed on any marketplace</span>';
+                stockInfo.style.display = 'block';
+                return;
+            }
+            let html = '<div style="font-weight: 600; margin-bottom: 0.5rem;">Stock by Marketplace:</div>';
+            data.forEach(mi => {
+                const isSelected = mi.marketplace_id == marketplaceId;
+                html += `<div style="display: flex; justify-content: space-between; padding: 0.25rem 0; ${isSelected ? 'color: var(--text-white); font-weight: 600;' : ''}">
+                    <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${mi.color}; margin-right: 6px;"></span>${mi.marketplace_name}</span>
+                    <span>${mi.allocated_qty} units (₹${mi.selling_price})</span>
+                </div>`;
+                if (isSelected) { priceInput.value = mi.selling_price; }
+            });
+            stockInfo.innerHTML = html;
+            stockInfo.style.display = 'block';
+        });
+}
+productSelect.addEventListener('change', updateStockInfo);
+marketplaceSelect.addEventListener('change', updateStockInfo);
+</script>
+{% endblock %}
+{% endblock %}
